@@ -1,0 +1,13 @@
+body {
+	background-color: #f0f0f0;
+}
+
+ul {
+	list-style-type: none;
+}
+
+.votescounter {
+	font-size: 100px;
+	margin-left: 50px;
+	color: #505050;
+}
