@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import urllib2
 import json
-from enc import *
 
 from bs4 import BeautifulSoup
 
@@ -17,7 +16,9 @@ from bs4 import BeautifulSoup
 
 # txt1 = doc.xpath('/html/body/center/table[5]/tbody/tr[3]/text()')
 
-pageName = "http://forum.guns.ru/forum_light_message/92/507831-6832.html"
+#"http://forum.guns.ru/forum_light_message/92/507831.html"
+
+pageName = "http://forum.guns.ru/forum_light_message/92/758859.html"
 
 getSite = urllib2.urlopen(pageName)
 
@@ -40,6 +41,8 @@ for quote_tag in soup("blockquote"):
 
 soup = BeautifulSoup(soup.prettify())
 
+#print soup
+
 soup.body.unwrap()
 soup.html.unwrap()
 
@@ -54,19 +57,20 @@ posts = []
 for post in txt_arr:
 	s = BeautifulSoup(post)
 
-	user = s.b.get_text().strip()
-	date = s.small.get_text().strip()
+	if (s.small):
 
-	s.b.decompose()
-	s.small.decompose()
+		user = s.b.get_text().strip()
+		date = s.small.get_text().strip()
 
-	text = s.get_text().strip()
+		s.b.decompose()
+		s.small.decompose()
 
-	posts.append({'user':user, 'date':date, 'text':text})
+		text = s.get_text().strip()
+
+		posts.append({'user':user, 'date':date, 'text':text})
 
 
-#arr = [text for text in txt_arr if len(text) > 10]
-
+print len(posts)
 print json.dumps(posts, sort_keys=True, indent=2)
 
 #soup.encode('utf8')
