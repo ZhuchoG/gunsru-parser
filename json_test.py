@@ -1,6 +1,8 @@
-# -*- coding: UTF-8 -*-
-
+# -*- coding: utf-8 -*-
 import urllib2
+import json
+from enc import *
+
 from bs4 import BeautifulSoup
 
 # from flask import Flask, redirect, jsonify
@@ -15,17 +17,67 @@ from bs4 import BeautifulSoup
 
 # txt1 = doc.xpath('/html/body/center/table[5]/tbody/tr[3]/text()')
 
-soup = BeautifulSoup(urllib2.urlopen("http://forum.guns.ru/forummessage/92/507831.html"))
+pageName = "http://forum.guns.ru/forum_light_message/92/507831-6832.html"
 
-#txt1 = doc.xpath('/html/body/span[@class="simple_text"]/text()')
-#txt2 = doc.xpath('/html/body/span[@class="cyrillic_text"]/following-sibling::text()[1]')
+getSite = urllib2.urlopen(pageName)
 
-txt = soup.find_all("td")
+soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
 
-# print txt
+soup.head.decompose()
 
-for link in soup.find_all('td'):
-    print(link.get_text())
+for center_tag in soup("center"):
+	center_tag.decompose()
+
+for br_tag in soup("br"):
+	br_tag.decompose()
+
+for font_tag in soup("font"):
+	font_tag.decompose()
+	
+for quote_tag in soup("blockquote"):
+	for hr_tag in quote_tag("hr"):
+		hr_tag.decompose()
+
+soup = BeautifulSoup(soup.prettify())
+
+soup.body.unwrap()
+soup.html.unwrap()
+
+txt = unicode(soup).replace("<hr/>", '\n')
+
+txt_arr = txt.split('\n\n')
+
+txt_arr = filter(None, txt_arr)
+
+posts = []
+
+for post in txt_arr:
+	s = BeautifulSoup(post)
+
+	user = s.b.get_text().strip()
+	date = s.small.get_text().strip()
+
+	s.b.decompose()
+	s.small.decompose()
+
+	text = s.get_text().strip()
+
+	posts.append({'user':user, 'date':date, 'text':text})
+
+
+#arr = [text for text in txt_arr if len(text) > 10]
+
+print json.dumps(posts, sort_keys=True, indent=2)
+
+#soup.encode('utf8')
+
+# tag = soup.new_tag("b")
+	# tag.string = font_tag.get_text().strip()
+	# font_tag.replace_with(tag)
+
+#txt_arr[0].encode('utf8')
+
+#txt.encode('utf8')
 
 # @app.route('/')
 # def hello():
@@ -34,3 +86,4 @@ for link in soup.find_all('td'):
 
 # if __name__ == '__main__':
 # 	app.run()
+
