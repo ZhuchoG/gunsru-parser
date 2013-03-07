@@ -34,10 +34,20 @@ def parse_theme(url):
 
 	for font_tag in soup("font"):
 		font_tag.decompose()
-		
+
+	images = []
+	i = 0
+	for img_tag in soup("img"):
+		images.append(img_tag['src'])
+		img = soup.new_string("["+unicode(i)+"]")
+		img_tag.replace_with(img)
+		i += 1
+
 	for quote_tag in soup("blockquote"):
 		for hr_tag in quote_tag("hr"):
 			hr_tag.decompose()
+		q = soup.new_string("|"+quote_tag.get_text()+"|")
+		quote_tag.replace_with(q)
 
 	soup = BeautifulSoup(soup.prettify())
 
@@ -54,18 +64,24 @@ def parse_theme(url):
 
 	for post in txt_arr:
 		s = BeautifulSoup(post)
+		s.body.unwrap()
+		s.html.unwrap()
+		
+		for p_tag in s("p"):
+			p_tag.unwrap()
 
 		if (s.small):
 
 			user = s.b.get_text().strip()
-			date = s.small.get_text().strip()
+			date = s.small.get_text().strip().split()[0]
+			time = s.small.get_text().strip().split()[1]
 
 			s.b.decompose()
 			s.small.decompose()
 
-			text = s.get_text().strip()
+			text = unicode(s).strip()
 
-			posts.append({'user':user, 'date':date, 'text':text})
+			posts.append({'user':user, 'date':date, 'time':time, 'text':text})
 
 	return json.dumps(posts, sort_keys=True, indent=2)
 
@@ -127,9 +143,9 @@ def parse_section(url):
 	return json.dumps(themes, sort_keys=True, indent=2)
 
 
-pageName = "http://forum.guns.ru/forumtopics/92.html"
+pageName = "http://forum.guns.ru/forum_light_message/92/1123528.html" #"http://forum.guns.ru/forumtopics/92.html"
 
-print parse_section(pageName)
+print parse_theme(pageName)
 #soup.encode('utf8')
 
 # tag = soup.new_tag("b")
