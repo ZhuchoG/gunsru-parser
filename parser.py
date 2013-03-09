@@ -9,9 +9,9 @@ from flask import jsonify
 
 BASEURL = "http://forum.guns.ru/forum"
 
-def parse_theme(theme_section, theme_number):
+def parse_theme(theme_section, theme_number, continue_from = "0"):
 
-	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number + ".html"
+	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ continue_from +".html"
 
 	getSite = urllib2.urlopen(url)
 
@@ -87,6 +87,8 @@ def parse_section(section_number):
 	soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
 	soup = BeautifulSoup(soup.prettify())
 	
+	title = soup.title.get_text().split(":")[0].strip()
+
 	soup.head.decompose()
 
 	for script_tag in soup("script"):
@@ -139,7 +141,7 @@ def parse_section(section_number):
 						"reply_count":reply_count, \
 						"begins_year":begins_year, "begins_month":begins_month, "begins_day":begins_day})
 
-	return jsonify({"themes":themes})
+	return jsonify({"title":title, "themes":themes})
 
 def parse_index():
 	url = BASEURL + "index"
