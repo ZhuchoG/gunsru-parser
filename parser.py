@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
 import urllib2
 import json
+import ast
 
 from bs4 import BeautifulSoup
 from datetime import *
 
 from flask import jsonify
+from redis import Redis
 
 BASEURL = "http://forum.guns.ru/forum"
 
+db = Redis()
+
 def parse_theme(theme_section, theme_number, continue_from = "0"):
 
-	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ continue_from +".html"
+	base_id = theme_section + ":" + theme_number
+
+	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.llen(base_id)) +".html"
+
+	print url
 
 	getSite = urllib2.urlopen(url)
 
@@ -54,28 +62,40 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 	txt_arr = filter(None, txt_arr)
 
+
 	posts = []
+	if (db.llen(base_id) < len(txt_arr)):
 
-	for post in txt_arr:
-		s = BeautifulSoup(post)
-		s.body.unwrap()
-		s.html.unwrap()
-		
-		for p_tag in s("p"):
-			p_tag.unwrap()
+		for post in txt_arr:
+			s = BeautifulSoup(post)
 
-		if (s.small):
+			if (s.body):
 
-			user = s.b.get_text().strip()
-			date = s.small.get_text().strip().split()[0]
-			time = s.small.get_text().strip().split()[1]
+				s.body.unwrap()
+				s.html.unwrap()
+				
+				for p_tag in s("p"):
+					p_tag.unwrap()
 
-			s.b.decompose()
-			s.small.decompose()
+				if (s.small):
 
-			text = unicode(s).strip()
+					user = s.b.get_text().strip()
+					date = s.small.get_text().strip().split()[0]
+					time = s.small.get_text().strip().split()[1]
 
-			posts.append({"user":user, "date":date, "time":time, "text":text})
+					s.b.decompose()
+					s.small.decompose()
+
+					text = unicode(s).strip()
+
+					post_dict = {"user":user, "date":date, "time":time, "text":text};
+
+					db.rpush(base_id, post_dict)
+
+	posts_strings = db.lrange(base_id, 0, -1)
+
+	for p in posts_strings:
+		posts.append(ast.literal_eval(p))
 
 	return jsonify({"posts":posts})
 
