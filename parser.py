@@ -14,6 +14,8 @@ BASEURL = "http://forum.guns.ru/forum"
 
 db = Redis()
 
+#-------------------------Parsing functions------------------------------------# 
+
 def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 	base_id = theme_section + ":" + theme_number
@@ -98,36 +100,11 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 					post_dict = {"user":user, "date":date, "time":time, "html_text":html_text, "text":text, "images_height":images_height};
 
-
-
 					db.rpush(base_id, post_dict)
 
-	# posts_strings = db.lrange(base_id, 0, -1)
-
-	# posts = []
-	# for p in posts_strings:
-	# 	posts.append(ast.literal_eval(p))
-
-	# return jsonify({"posts":posts})
-
-def get_theme(theme_section, theme_number):
-
-	base_id = theme_section + ":" + theme_number
-
-	if (db.llen(base_id)):
-		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
-	else:
-		parse_theme(theme_section, theme_number)
-
-	posts_strings = db.lrange(base_id, 0, -1)
-
-	posts = []
-	for p in posts_strings:
-		posts.append(ast.literal_eval(p))
-
-	return jsonify({"posts":posts})
-
 def parse_section(section_number):
+
+	base_id = "section:" + str(section_number)
 
 	url = BASEURL + "topics/" + section_number + ".html"
 
@@ -158,38 +135,48 @@ def parse_section(section_number):
 			theme_id = theme_url.rsplit('/',1)[1].split('.',1)[0]
 
 			if (theme_url.find(".html") != -1 and theme_url.find("http://") != -1):
+				try:
+					reply_count = table_row.find_all(width = "15%")[0].get_text().strip().split()[0]
 
-				time_stamp = table_row.find_all(width = "21%")[0].get_text().strip().split('->')
+					try:
+						int(reply_count)
+					except:
+						continue
 
-				begins_year = ""
-				begins_month = ""
-				begins_day = ""
+					time_stamp = table_row.find_all(width = "21%")[0].get_text().strip().split('->')
 
-				if (len(time_stamp) == 2):
-					last_post_begin = time_stamp[0].split('-')
+					begins_year = ""
+					begins_month = ""
+					begins_day = ""
 
-					if (len(last_post_begin) == 3):
-						begins_day = last_post_begin[0]
-						begins_month = last_post_begin[1]
-						begins_year = last_post_begin[2].strip()
-					if (len(last_post_begin) == 2):
-						begins_day = last_post_begin[0]
-						begins_month = last_post_begin[1]
-						begins_year = str(date.today().year)
+					if (len(time_stamp) == 2):
+						last_post_begin = time_stamp[0].split('-')
 
-					if (table_row.find_all(size = "1")):table_row.find_all(size = "1")[0].decompose()
+						if (len(last_post_begin) == 3):
+							begins_day = last_post_begin[0]
+							begins_month = last_post_begin[1]
+							begins_year = last_post_begin[2].strip()
+						if (len(last_post_begin) == 2):
+							begins_day = last_post_begin[0]
+							begins_month = last_post_begin[1]
+							begins_year = str(date.today().year)
+
+						if (table_row.find_all(size = "1")):table_row.find_all(size = "1")[0].decompose()
 
 
-				creator = table_row.find_all(width = "12%")[0].get_text().strip()
-				theme_name = table_row.find_all(width = "46%")[0].get_text().strip()
-				reply_count = table_row.find_all(width = "15%")[0].get_text().strip().split()[0]
-				
-				themes.append({"id":theme_id, "url":theme_url, \
-						"creator":creator, "name":theme_name, \
-						"reply_count":reply_count, \
-						"begins_year":begins_year, "begins_month":begins_month, "begins_day":begins_day})
+					creator = table_row.find_all(width = "12%")[0].get_text().strip()
+					theme_name = table_row.find_all(width = "46%")[0].get_text().strip().split('\n')[0]
+					
+					
+					theme_dict = ({"id":theme_id, "url":theme_url, \
+							"creator":creator, "name":theme_name, \
+							"reply_count":reply_count, \
+							"begins_year":begins_year, "begins_month":begins_month, "begins_day":begins_day})
 
-	return jsonify({"title":title, "themes":themes})
+					db.rpush(base_id, theme_dict)
+
+				except:
+					pass
 
 def parse_index():
 	url = BASEURL + "index"
@@ -200,13 +187,77 @@ def parse_index():
 
 	soup.head.decompose()
 
-	for script_tag in soup("script"):
-		script_tag.decompose()
+	sections = []
+	for a_tag in soup("a"):
+		if (a_tag['href'].find("topics") != -1):
 
-	for img in soup("img"):
-		img.decompose()
+			section_url = a_tag['href']
+			section_name = a_tag.get_text().strip()
+			section_id = section_url.rsplit('/',1)[1].split('.',1)[0]
 
-	for table in soup("table"):
-		table.unwrap()
+			sections_dict = ({"id":section_id, "name":section_name, "url":section_url})
 
-	return str(soup)
+			db.rpush("index", sections_dict)
+
+	# for script_tag in soup("script"):
+	# 	script_tag.decompose()
+
+	# for img in soup("img"):
+	# 	img.decompose()
+
+	# for table in soup("table"):
+	# 	table.unwrap()
+
+	# return jsonify({"sections":sections})
+
+#-----------------------Get functions--------------------------------#
+
+def get_section(section_number):
+
+	base_id = "section:" + str(section_number)
+
+	if (db.llen(base_id)):
+		thread.start_new_thread( parse_section, (section_number, ) )
+	else:
+		parse_section(section_number)
+
+	themes_strings = db.lrange(base_id, 0, -1)
+
+	themes = []
+	for t in themes_strings:
+		themes.append(ast.literal_eval(t))
+
+	return jsonify({"themes":themes})
+
+def get_theme(theme_section, theme_number):
+
+	base_id = theme_section + ":" + theme_number
+
+	if (db.llen(base_id)):
+		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
+	else:
+		parse_theme(theme_section, theme_number)
+
+	posts_strings = db.lrange(base_id, 0, -1)
+
+	posts = []
+	for p in posts_strings:
+		posts.append(ast.literal_eval(p))
+
+	return jsonify({"posts":posts})
+
+def get_index():
+	base_id = "index"
+
+	if (db.llen(base_id)):
+		thread.start_new_thread( parse_index, ())
+	else:
+		parse_index()
+
+	sections_strings = db.lrange(base_id, 0, -1)
+
+	sections = []
+	for s in sections_strings:
+		sections.append(ast.literal_eval(s))
+
+	return jsonify({"sections":sections})
