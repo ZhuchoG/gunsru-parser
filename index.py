@@ -13,7 +13,7 @@ app.debug = True
 
 @app.route('/<string:section>/<string:theme>', methods=['POST', 'GET'])
 def show_theme(section, theme):
-	return parse_theme(section, theme)
+	return get_theme(section, theme)
 
 @app.route('/<string:section>/<string:theme>:<string:from_post>', methods=['POST', 'GET'])
 def show_theme_from_post(section, theme, from_post):

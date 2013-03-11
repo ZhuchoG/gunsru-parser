@@ -2,6 +2,7 @@
 import urllib2
 import json
 import ast
+import thread
 
 from bs4 import BeautifulSoup
 from datetime import *
@@ -62,8 +63,6 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 	txt_arr = filter(None, txt_arr)
 
-
-	posts = []
 	if (db.llen(base_id) < len(txt_arr)):
 
 		for post in txt_arr:
@@ -77,6 +76,13 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 				for p_tag in s("p"):
 					p_tag.unwrap()
 
+				images_height = 0
+				for img_tag in s("img"):
+					try:
+						images_height += int(img_tag['height'])
+					except:
+						images_height += 0
+
 				if (s.small):
 
 					user = s.b.get_text().strip()
@@ -86,14 +92,36 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 					s.b.decompose()
 					s.small.decompose()
 
-					text = unicode(s).strip()
+					html_text = unicode(s).strip()
 
-					post_dict = {"user":user, "date":date, "time":time, "text":text};
+					text = s.get_text().strip();
+
+					post_dict = {"user":user, "date":date, "time":time, "html_text":html_text, "text":text, "images_height":images_height};
+
+
 
 					db.rpush(base_id, post_dict)
 
+	# posts_strings = db.lrange(base_id, 0, -1)
+
+	# posts = []
+	# for p in posts_strings:
+	# 	posts.append(ast.literal_eval(p))
+
+	# return jsonify({"posts":posts})
+
+def get_theme(theme_section, theme_number):
+
+	base_id = theme_section + ":" + theme_number
+
+	if (db.llen(base_id)):
+		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
+	else:
+		parse_theme(theme_section, theme_number)
+
 	posts_strings = db.lrange(base_id, 0, -1)
 
+	posts = []
 	for p in posts_strings:
 		posts.append(ast.literal_eval(p))
 
