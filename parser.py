@@ -201,8 +201,6 @@ def parse_section(section_number):
 
 					last_post_datetime_string = last_day + "-" + last_month + "-" + last_year + " " + last_time
 
-					print last_post_datetime_string
-
 					last_post_datetime = datetime.strptime(last_post_datetime_string,'%d-%m-%Y %H:%M')
 
 					timestamp = time.mktime(last_post_datetime.timetuple())
@@ -268,7 +266,7 @@ def parse_subindex(subindex_id):
 
 			db.sadd(base_id, sections_dict)
 
-#-----------------------Get functions--------------------------------#
+#----------------------------------Get functions------------------------------------#
 
 def get_section(section_number):
 
