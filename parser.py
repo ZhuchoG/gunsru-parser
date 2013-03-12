@@ -4,9 +4,11 @@ import json
 import ast
 import thread
 
-from bs4 import BeautifulSoup
-from datetime import *
+from datetime import date,datetime
+import time
 
+from operator import itemgetter
+from bs4 import BeautifulSoup
 from flask import jsonify
 from redis import Redis
 
@@ -14,13 +16,13 @@ BASEURL = "http://forum.guns.ru/forum"
 
 db = Redis()
 
-#-------------------------Parsing functions------------------------------------# 
+#-------------------------------Parsing functions------------------------------------# 
 
 def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 	base_id = theme_section + ":" + theme_number
 
-	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.llen(base_id)) +".html"
+	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.scard(base_id)) +".html"
 
 	print url
 
@@ -65,7 +67,7 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 	txt_arr = filter(None, txt_arr)
 
-	if (db.llen(base_id) < len(txt_arr)):
+	if (db.scard(base_id) < len(txt_arr)):
 
 		for post in txt_arr:
 			s = BeautifulSoup(post)
@@ -88,8 +90,12 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 				if (s.small):
 
 					user = s.b.get_text().strip()
-					date = s.small.get_text().strip().split()[0]
-					time = s.small.get_text().strip().split()[1]
+					post_date = s.small.get_text().strip().split()[0]
+					post_time = s.small.get_text().strip().split()[1]
+
+					post_datetime = datetime.strptime(s.small.get_text().strip(),'%d-%m-%Y %H:%M')
+
+					timestamp = time.mktime(post_datetime.timetuple())
 
 					s.b.decompose()
 					s.small.decompose()
@@ -98,9 +104,9 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 					text = s.get_text().strip();
 
-					post_dict = {"user":user, "date":date, "time":time, "html_text":html_text, "text":text, "images_height":images_height};
+					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text, "text":text, "images_height":images_height};
 
-					db.rpush(base_id, post_dict)
+					db.sadd(base_id, post_dict)
 
 def parse_section(section_number):
 
@@ -149,20 +155,57 @@ def parse_section(section_number):
 					begins_month = ""
 					begins_day = ""
 
-					if (len(time_stamp) == 2):
-						last_post_begin = time_stamp[0].split('-')
+					last_year = ""
+					last_month = ""
+					last_day = ""
+					last_time = ""
 
-						if (len(last_post_begin) == 3):
-							begins_day = last_post_begin[0]
-							begins_month = last_post_begin[1]
-							begins_year = last_post_begin[2].strip()
-						if (len(last_post_begin) == 2):
-							begins_day = last_post_begin[0]
-							begins_month = last_post_begin[1]
+					if (len(time_stamp) == 1):
+
+						begins_day = last_day = str(date.today().day)
+						begins_month = last_month = str(date.today().month)
+						begins_year = last_year = str(date.today().year)
+
+						last_time = timestamp[0]
+
+					if (len(time_stamp) == 2):
+						theme_begins = time_stamp[0].split('-')
+
+						if (len(theme_begins) == 3):
+							begins_day = theme_begins[0]
+							begins_month = theme_begins[1]
+							begins_year = theme_begins[2].strip()
+						if (len(theme_begins) == 2):
+							begins_day = theme_begins[0]
+							begins_month = theme_begins[1]
 							begins_year = str(date.today().year)
 
-						if (table_row.find_all(size = "1")):table_row.find_all(size = "1")[0].decompose()
+						theme_last_post = time_stamp[1].split()
 
+						if (len(theme_last_post) == 1):
+							last_day = str(date.today().day)
+							last_month = str(date.today().month)
+							last_year = str(date.today().year)
+
+							last_time = theme_last_post[0].strip()
+
+						if (len(theme_last_post) == 2):
+							last_year = str(date.today().year)
+							last_day = theme_last_post[0].strip().split('-')[0]
+							last_month = theme_last_post[0].strip().split('-')[1]
+
+							last_time = theme_last_post[1]
+
+
+						if (table_row.find_all(size = "1")): table_row.find_all(size = "1")[0].decompose()
+
+					last_post_datetime_string = last_day + "-" + last_month + "-" + last_year + " " + last_time
+
+					print last_post_datetime_string
+
+					last_post_datetime = datetime.strptime(last_post_datetime_string,'%d-%m-%Y %H:%M')
+
+					timestamp = time.mktime(last_post_datetime.timetuple())
 
 					creator = table_row.find_all(width = "12%")[0].get_text().strip()
 					theme_name = table_row.find_all(width = "46%")[0].get_text().strip().split('\n')[0]
@@ -171,15 +214,41 @@ def parse_section(section_number):
 					theme_dict = ({"id":theme_id, "url":theme_url, \
 							"creator":creator, "name":theme_name, \
 							"reply_count":reply_count, \
-							"begins_year":begins_year, "begins_month":begins_month, "begins_day":begins_day})
+							"timestamp":timestamp, \
+							"begins_year":begins_year, "begins_month":begins_month, "begins_day":begins_day, \
+							"last_post_month":last_month, "last_post_day":last_day, "last_post_time": last_time})
 
-					db.rpush(base_id, theme_dict)
+					db.sadd(base_id, theme_dict)
 
 				except:
 					pass
 
 def parse_index():
 	url = BASEURL + "index"
+
+	getSite = urllib2.urlopen(url)
+	soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
+	soup = BeautifulSoup(soup.prettify())
+
+	soup.head.decompose()
+
+	sections = []
+	for a_tag in soup("a"):
+		if (a_tag['href'].find("index") != -1 and a_tag['href'].find(".html") != -1):
+
+			section_url = a_tag['href']
+			section_name = a_tag.get_text().strip()
+			section_id = int(section_url.rsplit('/',1)[1].split('.',1)[0])
+
+			sections_dict = ({"id":section_id, "name":section_name, "url":section_url})
+
+			db.sadd("index", sections_dict)
+
+def parse_subindex(subindex_id):
+
+	base_id = "index:" + str(subindex_id)
+
+	url = BASEURL + "index/" + str(subindex_id) + ".html"
 
 	getSite = urllib2.urlopen(url)
 	soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
@@ -197,18 +266,7 @@ def parse_index():
 
 			sections_dict = ({"id":section_id, "name":section_name, "url":section_url})
 
-			db.rpush("index", sections_dict)
-
-	# for script_tag in soup("script"):
-	# 	script_tag.decompose()
-
-	# for img in soup("img"):
-	# 	img.decompose()
-
-	# for table in soup("table"):
-	# 	table.unwrap()
-
-	# return jsonify({"sections":sections})
+			db.sadd(base_id, sections_dict)
 
 #-----------------------Get functions--------------------------------#
 
@@ -216,16 +274,18 @@ def get_section(section_number):
 
 	base_id = "section:" + str(section_number)
 
-	if (db.llen(base_id)):
+	if (db.scard(base_id)):
 		thread.start_new_thread( parse_section, (section_number, ) )
 	else:
 		parse_section(section_number)
 
-	themes_strings = db.lrange(base_id, 0, -1)
+	themes_strings = db.smembers(base_id)
 
 	themes = []
 	for t in themes_strings:
 		themes.append(ast.literal_eval(t))
+
+	themes = sorted(themes, key=itemgetter('timestamp'), reverse=True)
 
 	return jsonify({"themes":themes})
 
@@ -233,31 +293,52 @@ def get_theme(theme_section, theme_number):
 
 	base_id = theme_section + ":" + theme_number
 
-	if (db.llen(base_id)):
+	if (db.scard(base_id)):
 		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
 	else:
 		parse_theme(theme_section, theme_number)
 
-	posts_strings = db.lrange(base_id, 0, -1)
+	posts_strings = db.smembers(base_id)
 
 	posts = []
 	for p in posts_strings:
 		posts.append(ast.literal_eval(p))
+
+	posts = sorted(posts, key=itemgetter('timestamp'))
 
 	return jsonify({"posts":posts})
 
 def get_index():
 	base_id = "index"
 
-	if (db.llen(base_id)):
+	if (db.scard(base_id)):
 		thread.start_new_thread( parse_index, ())
 	else:
 		parse_index()
 
-	sections_strings = db.lrange(base_id, 0, -1)
+	sections_strings = db.smembers(base_id)
+
+	sections = []
+	for s in sections_strings:
+		sections.append(ast.literal_eval(s))
+
+	sections = sorted(sections, key=itemgetter('id'))
+
+	return jsonify({"sections":sections})
+
+def get_subindex(subindex_id):
+	base_id = "index:" + str(subindex_id)
+
+	if (db.scard(base_id)):
+		thread.start_new_thread( parse_subindex, (subindex_id, ))
+	else:
+		parse_subindex(subindex_id)
+
+	sections_strings = db.smembers(base_id)
 
 	sections = []
 	for s in sections_strings:
 		sections.append(ast.literal_eval(s))
 
 	return jsonify({"sections":sections})
+	

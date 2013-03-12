@@ -7,6 +7,10 @@ from flask import Flask
 app = Flask(__name__)
 app.debug = True
 
+@app.route('/-<string:subindex>')
+def show_subindex(subindex):
+	return get_subindex(subindex)
+
 @app.route('/')
 def index():
 	return get_index()
