@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import imp
+
+parser = imp.load_source('parser', '/var/www/gunsru-api/parser.py')
+
 from parser import *
 
 from flask import Flask
 
 app = Flask(__name__)
-app.debug = True
+#app.debug = True
 
 @app.route('/-<string:subindex>')
 def show_subindex(subindex):
@@ -15,7 +19,7 @@ def show_subindex(subindex):
 def index():
 	return get_index()
 
-@app.route('/<string:section>', methods=['POST', 'GET'])
+@app.route('/<string:section>', methods=['GET'])
 def show_section(section):
 	return get_section(section)
 
@@ -28,4 +32,4 @@ def show_theme_from_post(section, theme, from_post):
 	return parse_theme(section, theme, from_post)
 
 if __name__ == '__main__':
-	app.run()
+	app.run(host='0.0.0.0')

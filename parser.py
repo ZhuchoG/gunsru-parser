@@ -80,13 +80,6 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 				for p_tag in s("p"):
 					p_tag.unwrap()
 
-				images_height = 0
-				for img_tag in s("img"):
-					try:
-						images_height += int(img_tag['height'])
-					except:
-						images_height += 0
-
 				if (s.small):
 
 					user = s.b.get_text().strip()
@@ -102,9 +95,7 @@ def parse_theme(theme_section, theme_number, continue_from = "0"):
 
 					html_text = unicode(s).strip()
 
-					text = s.get_text().strip();
-
-					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text, "text":text, "images_height":images_height};
+					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text};
 
 					db.sadd(base_id, post_dict)
 
