@@ -18,7 +18,7 @@ db = Redis()
 
 #-------------------------------Parsing functions------------------------------------# 
 
-def parse_theme(theme_section, theme_number, continue_from = "0"):
+def parse_theme(theme_section, theme_number):
 
 	base_id = theme_section + ":" + theme_number
 
@@ -278,14 +278,14 @@ def get_section(section_number):
 
 	return jsonify({"themes":themes})
 
-def get_theme(theme_section, theme_number, continue_from = 0):
+def get_theme(theme_section, theme_number, continue_from = 0, get_to = -1):
 
 	base_id = theme_section + ":" + theme_number
 
 	if (db.scard(base_id)):
-		thread.start_new_thread( parse_theme, (theme_section, theme_number, continue_from, ) )
+		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
 	else:
-		parse_theme(theme_section, theme_number, continue_from)
+		parse_theme(theme_section, theme_number, )
 
 	posts_strings = db.smembers(base_id)
 
@@ -295,7 +295,12 @@ def get_theme(theme_section, theme_number, continue_from = 0):
 
 	posts = sorted(posts, key=itemgetter('timestamp'))
 
-	posts = posts[int(continue_from):-1]
+	if (int(get_to) > len(posts)): 
+		get_to = -1 
+	else: 
+		get_to = int(get_to)
+
+	posts = posts[int(continue_from):get_to]
 
 	return jsonify({"posts":posts})
 
