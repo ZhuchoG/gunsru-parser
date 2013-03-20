@@ -278,14 +278,14 @@ def get_section(section_number):
 
 	return jsonify({"themes":themes})
 
-def get_theme(theme_section, theme_number):
+def get_theme(theme_section, theme_number, continue_from = 0):
 
 	base_id = theme_section + ":" + theme_number
 
 	if (db.scard(base_id)):
-		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
+		thread.start_new_thread( parse_theme, (theme_section, theme_number, continue_from, ) )
 	else:
-		parse_theme(theme_section, theme_number)
+		parse_theme(theme_section, theme_number, continue_from)
 
 	posts_strings = db.smembers(base_id)
 
@@ -294,6 +294,8 @@ def get_theme(theme_section, theme_number):
 		posts.append(ast.literal_eval(p))
 
 	posts = sorted(posts, key=itemgetter('timestamp'))
+
+	posts = posts[int(continue_from):-1]
 
 	return jsonify({"posts":posts})
 
