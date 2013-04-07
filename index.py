@@ -2,7 +2,7 @@
 
 import imp
 
-parser = imp.load_source('parser', '/var/www/gunsru-api/parser.py')
+parser = imp.load_source('parser', './parser.py')
 
 from parser import *
 

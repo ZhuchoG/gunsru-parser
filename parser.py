@@ -95,7 +95,7 @@ def parse_theme(theme_section, theme_number):
 
 					html_text = unicode(s).strip()
 
-					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text};
+					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text}
 
 					db.sadd(base_id, post_dict)
 
