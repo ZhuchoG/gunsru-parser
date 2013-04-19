@@ -274,8 +274,6 @@ def get_section(section_number):
 	for t in themes_strings:
 		themes.append(ast.literal_eval(t))
 
-	themes = sorted(themes, key=itemgetter('timestamp'), reverse=True)
-
 	return jsonify({"themes":themes})
 
 def get_theme(theme_section, theme_number, continue_from = 0, get_to = -1):
@@ -292,8 +290,6 @@ def get_theme(theme_section, theme_number, continue_from = 0, get_to = -1):
 	posts = []
 	for p in posts_strings:
 		posts.append(ast.literal_eval(p))
-
-	posts = sorted(posts, key=itemgetter('timestamp'))
 
 	if (int(get_to) > len(posts)): 
 		get_to = -1 
@@ -317,8 +313,6 @@ def get_index():
 	sections = []
 	for s in sections_strings:
 		sections.append(ast.literal_eval(s))
-
-	sections = sorted(sections, key=itemgetter('id'))
 
 	return jsonify({"sections":sections})
 
