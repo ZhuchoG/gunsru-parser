@@ -1,0 +1,40 @@
+http://forum.guns.ru/cgi-bin/post.cgi/reply/<section_id>/<theme_id>?UserName=<userName>&Password=<Password>&MsgIcon=1&ReplyMessage=<messageText>&action=postreply&TopicSubject=<themeTitle>&forum=<sectionTitle>&number=<sectionId>&topic=<themeId>
+
+http://forum.guns.ru/cgi-bin/post.cgi/reply/<section_id>/<theme_id>?
+
+Юзер и пароль
+name="UserName"
+name="Password"
+
+Эмблема сообщения
+name="MsgIcon"
+value="1" "http://forum.guns.ru/forums/icons/icon1.gif
+value="10" "http://forum.guns.ru/forums/icons/icon10.gif"
+value="11" "http://forum.guns.ru/forums/icons/icon11.gif"
+value="12" "http://forum.guns.ru/forums/icons/icon12.gif"
+value="13" "http://forum.guns.ru/forums/icons/icon13.gif"
+value="14" "http://forum.guns.ru/forums/icons/icon14.gif"
+value="2" "http://forum.guns.ru/forums/icons/icon2.gif"
+value="3" "http://forum.guns.ru/forums/icons/icon3.gif"
+value="4" "http://forum.guns.ru/forums/icons/icon4.gif"
+value="5" "http://forum.guns.ru/forums/icons/icon5.gif"
+value="6" "http://forum.guns.ru/forums/icons/icon6.gif"
+value="7" "http://forum.guns.ru/forums/icons/icon7.gif"
+value="8" "http://forum.guns.ru/forums/icons/icon8.gif"
+value="9" "http://forum.guns.ru/forums/icons/icon9.gif"
+
+Сообщение
+name="ReplyMessage"
+
+Отключить смайлы
+name="DisableSmilies" value="yes"
+
+Добавить подпись
+name="Signature" value="yes"
+
+Скрытые поля
+name="action" value="postreply"
+name="TopicSubject" value=<themeTitle>
+name="forum" value=<sectionTitle>
+name="number" value=<sectionId>
+name="topic" value=<themeId>

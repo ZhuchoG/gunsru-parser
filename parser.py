@@ -78,13 +78,11 @@ def parse_theme(theme_section, theme_number):
 				s.body.unwrap()
 				s.html.unwrap()
 				
-				for img_tag in soup("img"):
-					#images.append(img_tag['src'])
-					img = soup.new_tag('img')
-					img['src'] = img_tag['src'] #.replace("talks", "forum")
-					img_tag.replace_with(img)
-
-
+				# for img_tag in soup("img"):
+				# 	#images.append(img_tag['src'])
+				# 	img = soup.new_tag('img')
+				# 	img['src'] = img_tag['src'] #.replace("talks", "forum")
+				# 	img_tag.replace_with(img)
 
 				for p_tag in s("p"):
 					p_tag.unwrap()
