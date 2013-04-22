@@ -16,6 +16,10 @@ BASEURL = "http://forum.guns.ru/forum"
 
 db = Redis()
 
+proxy_support = urllib2.ProxyHandler({"http":"http://192.168.0.169:3128"})
+opener = urllib2.build_opener(proxy_support)
+urllib2.install_opener(opener)
+
 #-------------------------------Parsing functions------------------------------------# 
 
 def parse_theme(theme_section, theme_number):
@@ -146,8 +150,8 @@ def parse_section(section_number):
 						int(reply_count)
 					except:
 						continue
-
-					time_stamp = table_row.find_all(width = "21%")[0].get_text().strip().split('->')
+					
+					time_stamp = table_row.find_all(width = "21%")[0].get_text().strip()
 
 					begins_year = ""
 					begins_month = ""
@@ -158,52 +162,61 @@ def parse_section(section_number):
 					last_day = ""
 					last_time = ""
 
-					if (len(time_stamp) == 1):
-
+					if (time_stamp.find("->") == -1):
 						begins_day = last_day = str(date.today().day)
 						begins_month = last_month = str(date.today().month)
 						begins_year = last_year = str(date.today().year)
 
-						last_time = timestamp[0]
+						last_time = time_stamp
+					else:
+						time_stamp = time_stamp.split("->")
 
-					if (len(time_stamp) == 2):
-						theme_begins = time_stamp[0].split('-')
+						if (len(time_stamp) == 1 ):
 
-						if (len(theme_begins) == 3):
-							begins_day = theme_begins[0]
-							begins_month = theme_begins[1]
-							begins_year = theme_begins[2].strip()
-						if (len(theme_begins) == 2):
-							begins_day = theme_begins[0]
-							begins_month = theme_begins[1]
-							begins_year = str(date.today().year)
+							begins_day = last_day = str(date.today().day)
+							begins_month = last_month = str(date.today().month)
+							begins_year = last_year = str(date.today().year)
 
-						theme_last_post = time_stamp[1].split()
+							last_time = timestamp[0]
 
-						
+						if (len(time_stamp) == 2):
+							theme_begins = time_stamp[0].split('-')
 
-						if (len(theme_last_post) == 1):
-							last_day = str(date.today().day)
-							last_month = str(date.today().month)
-							last_year = str(date.today().year)
+							if (len(theme_begins) == 3):
+								begins_day = theme_begins[0]
+								begins_month = theme_begins[1]
+								begins_year = theme_begins[2].strip()
+							if (len(theme_begins) == 2):
+								begins_day = theme_begins[0]
+								begins_month = theme_begins[1]
+								begins_year = str(date.today().year)
 
-							last_time = theme_last_post[0].strip()
+							theme_last_post = time_stamp[1].split()
 
-						if (len(theme_last_post) == 2):
+							
 
-							theme_last_post_DMY = last_day = theme_last_post[0].strip().split('-')
-
-							if (len(theme_last_post_DMY) == 2):
+							if (len(theme_last_post) == 1):
+								last_day = str(date.today().day)
+								last_month = str(date.today().month)
 								last_year = str(date.today().year)
-								last_day = theme_last_post_DMY[0]
-								last_month = theme_last_post_DMY[1]
 
-							if (len(theme_last_post_DMY) == 3):
-								last_year = theme_last_post_DMY[2]
-								last_day = theme_last_post_DMY[0]
-								last_month = theme_last_post_DMY[1]
+								last_time = theme_last_post[0].strip()
 
-							last_time = theme_last_post[1]
+							if (len(theme_last_post) == 2):
+
+								theme_last_post_DMY = last_day = theme_last_post[0].strip().split('-')
+
+								if (len(theme_last_post_DMY) == 2):
+									last_year = str(date.today().year)
+									last_day = theme_last_post_DMY[0]
+									last_month = theme_last_post_DMY[1]
+
+								if (len(theme_last_post_DMY) == 3):
+									last_year = theme_last_post_DMY[2]
+									last_day = theme_last_post_DMY[0]
+									last_month = theme_last_post_DMY[1]
+
+								last_time = theme_last_post[1]
 
 
 						if (table_row.find_all(size = "1")): table_row.find_all(size = "1")[0].decompose()
@@ -262,6 +275,9 @@ def parse_subindex(subindex_id):
 	soup = BeautifulSoup(soup.prettify())
 
 	soup.head.decompose()
+
+	for font_tag in soup("font"):
+		font_tag.decompose()
 
 	sections = []
 	for a_tag in soup("a"):
