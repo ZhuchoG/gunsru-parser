@@ -22,7 +22,11 @@ def parse_theme(theme_section, theme_number):
 
 	base_id = theme_section + ":" + theme_number
 
-	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.scard(base_id)) +".html"
+	url = ""
+	if (db.scard(base_id)):
+		url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.scard(base_id)) +".html"
+	else:
+		url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +".html"
 
 	print url
 
