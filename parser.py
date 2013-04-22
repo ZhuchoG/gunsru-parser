@@ -177,6 +177,8 @@ def parse_section(section_number):
 
 						theme_last_post = time_stamp[1].split()
 
+						
+
 						if (len(theme_last_post) == 1):
 							last_day = str(date.today().day)
 							last_month = str(date.today().month)
@@ -185,9 +187,18 @@ def parse_section(section_number):
 							last_time = theme_last_post[0].strip()
 
 						if (len(theme_last_post) == 2):
-							last_year = str(date.today().year)
-							last_day = theme_last_post[0].strip().split('-')[0]
-							last_month = theme_last_post[0].strip().split('-')[1]
+
+							theme_last_post_DMY = last_day = theme_last_post[0].strip().split('-')
+
+							if (len(theme_last_post_DMY) == 2):
+								last_year = str(date.today().year)
+								last_day = theme_last_post_DMY[0]
+								last_month = theme_last_post_DMY[1]
+
+							if (len(theme_last_post_DMY) == 3):
+								last_year = theme_last_post_DMY[2]
+								last_day = theme_last_post_DMY[0]
+								last_month = theme_last_post_DMY[1]
 
 							last_time = theme_last_post[1]
 
