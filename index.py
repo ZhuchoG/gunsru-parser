@@ -19,6 +19,10 @@ def show_subindex(subindex):
 def index():
 	return get_index()
 
+@app.route('/daily')
+def show_daily():
+	return get_daily()
+
 @app.route('/<string:section>', methods=['POST', 'GET'])
 def show_section(section):
 	return get_section(section)

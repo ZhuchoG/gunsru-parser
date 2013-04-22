@@ -48,7 +48,10 @@ def parse_theme(theme_section, theme_number):
 			br_tag.decompose()
 
 	for font_tag in soup("font"):
-		font_tag.decompose()
+		try:
+			font_tag.decompose()
+		except:
+			pass
 
 	# images = []
 	# i = 0
@@ -149,7 +152,7 @@ def parse_section(section_number):
 					try:
 						int(reply_count)
 					except:
-						continue
+						pass
 					
 					time_stamp = table_row.find_all(width = "21%")[0].get_text().strip()
 
@@ -291,7 +294,73 @@ def parse_subindex(subindex_id):
 
 			db.sadd(base_id, sections_dict)
 
+def parse_daily():
+
+	url = BASEURL + "daily.html"
+
+	getSite = urllib2.urlopen(url)
+	soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
+	soup = BeautifulSoup(soup.prettify())
+
+	soup.head.decompose()
+
+	for script_tag in soup("script"):
+		script_tag.decompose()
+
+	# for font_tag in soup("font"):
+	# 	font_tag.unwrap()
+
+	for img in soup("img"):
+		img.decompose()
+
+	for table in soup("table"):
+		table.unwrap()
+
+	for table_row in soup("tr"):
+		if (table_row.a):
+			theme_url = table_row.a['href'].replace("-0","")
+			if (theme_url.find(".html") != -1 and theme_url.find("http://") != -1):
+
+				
+				theme_id = theme_url.rsplit('/',1)[1].split('.',1)[0]
+
+				theme_name = table_row.a.get_text().strip()
+
+				section_name = table_row.find_all(size="2")[1].get_text().strip()
+
+				last_year = str(date.today().year)
+				last_month = str(date.today().month)
+				last_day = str(date.today().day)
+				last_time = table_row.find(size="Unknown Tag: DateSize").get_text().strip()
+
+				last_post_datetime_string = last_day + "-" + last_month + "-" + last_year + " " + last_time
+
+				last_post_datetime = datetime.strptime(last_post_datetime_string,'%d-%m-%Y %H:%M %p')
+
+				timestamp = time.mktime(last_post_datetime.timetuple())
+
+				themes_dict = ({"id":theme_id, "name":theme_name, "url":theme_url, "timestamp":timestamp, "section_name":section_name})
+
+				db.sadd("daily", themes_dict)
+
 #----------------------------------Get functions------------------------------------#
+def get_daily():
+
+	base_id = "daily"
+
+	if (db.scard(base_id)):
+		thread.start_new_thread( parse_daily, () )
+	else:
+		parse_daily()
+
+	themes_strings = db.smembers(base_id)
+
+	themes = []
+	for t in themes_strings:
+		themes.append(ast.literal_eval(t))
+
+	return jsonify({"themes":themes})
+
 
 def get_section(section_number):
 
