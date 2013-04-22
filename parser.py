@@ -48,11 +48,8 @@ def parse_theme(theme_section, theme_number):
 
 	# images = []
 	# i = 0
-	# for img_tag in soup("img"):
-	# 	images.append(img_tag['src'])
-	# 	img = soup.new_string("["+unicode(i)+"]")
-	# 	img_tag.replace_with(img)
-	# 	i += 1
+	
+
 
 	for quote_tag in soup("blockquote"):
 		for hr_tag in quote_tag("hr"):
@@ -81,6 +78,14 @@ def parse_theme(theme_section, theme_number):
 				s.body.unwrap()
 				s.html.unwrap()
 				
+				for img_tag in soup("img"):
+					#images.append(img_tag['src'])
+					img = soup.new_tag('img')
+					img['src'] = img_tag['src'] #.replace("talks", "forum")
+					img_tag.replace_with(img)
+
+
+
 				for p_tag in s("p"):
 					p_tag.unwrap()
 
@@ -97,7 +102,7 @@ def parse_theme(theme_section, theme_number):
 					s.b.decompose()
 					s.small.decompose()
 
-					html_text = unicode(s).strip()
+					html_text = unicode(s).strip().replace("talks", "forum")
 
 					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text}
 
