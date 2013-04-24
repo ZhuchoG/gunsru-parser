@@ -144,6 +144,7 @@ def parse_section(section_number):
 		if (table_row.a):
 			theme_url = table_row.a['href']
 			theme_id = theme_url.rsplit('/',1)[1].split('.',1)[0]
+			section_id = theme_url.rsplit('/',1)[0].rsplit('/',1)[1]
 
 			if (theme_url.find(".html") != -1 and theme_url.find("http://") != -1):
 				try:
@@ -234,7 +235,7 @@ def parse_section(section_number):
 					theme_name = table_row.find_all(width = "46%")[0].get_text().strip().split('\n')[0]
 					
 					
-					theme_dict = ({"id":theme_id, "url":theme_url, \
+					theme_dict = ({"id":theme_id, "section":section_id, "url":theme_url, \
 							"creator":creator, "name":theme_name, \
 							"reply_count":reply_count, \
 							"timestamp":timestamp, \
@@ -299,7 +300,7 @@ def parse_daily():
 	url = BASEURL + "daily.html"
 
 	getSite = urllib2.urlopen(url)
-	soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
+	soup = BeautifulSoup(getSite, from_encoding = "koi8-r")
 	soup = BeautifulSoup(soup.prettify())
 
 	soup.head.decompose()
@@ -323,7 +324,8 @@ def parse_daily():
 
 				
 				theme_id = theme_url.rsplit('/',1)[1].split('.',1)[0]
-
+				section_id = theme_url.rsplit('/',1)[0].rsplit('/',1)[1]
+				
 				theme_name = table_row.a.get_text().strip()
 
 				section_name = table_row.find_all(size="2")[1].get_text().strip()
@@ -339,7 +341,7 @@ def parse_daily():
 
 				timestamp = time.mktime(last_post_datetime.timetuple())
 
-				themes_dict = ({"id":theme_id, "name":theme_name, "url":theme_url, "timestamp":timestamp, "section_name":section_name})
+				themes_dict = ({"id":theme_id, "section":section_id, "name":theme_name, "url":theme_url, "timestamp":timestamp, "section_name":section_name})
 
 				db.sadd("daily", themes_dict)
 
@@ -394,12 +396,12 @@ def get_theme(theme_section, theme_number, continue_from = 0, get_to = -1):
 	for p in posts_strings:
 		posts.append(ast.literal_eval(p))
 
-	if (int(get_to) > len(posts)): 
-		get_to = -1 
-	else: 
-		get_to = int(get_to)
+	# if (int(get_to) >= len(posts)): 
+	# 	get_to = -1 
+	# else: 
+	# 	get_to = int(get_to)
 
-	posts = posts[int(continue_from):get_to]
+	#posts = posts[int(continue_from):get_to]
 
 	return jsonify({"posts":posts})
 
