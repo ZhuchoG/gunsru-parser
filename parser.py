@@ -109,7 +109,7 @@ def parse_theme(theme_section, theme_number):
 
 					html_text = unicode(s).strip().replace("talks", "forum")
 
-					post_dict = {"user":user, "date":post_date, "time":post_time, "timestamp":timestamp, "html_text":html_text}
+					post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text}
 
 					db.sadd(base_id, post_dict)
 
@@ -197,8 +197,6 @@ def parse_section(section_number):
 
 							theme_last_post = time_stamp[1].split()
 
-							
-
 							if (len(theme_last_post) == 1):
 								last_day = str(date.today().day)
 								last_month = str(date.today().month)
@@ -234,13 +232,9 @@ def parse_section(section_number):
 					creator = table_row.find_all(width = "12%")[0].get_text().strip()
 					theme_name = table_row.find_all(width = "46%")[0].get_text().strip().split('\n')[0]
 					
-					
-					theme_dict = ({"id":theme_id, "section":section_id, "url":theme_url, \
+					theme_dict = ({"id":theme_id, "section":section_id, \
 							"creator":creator, "name":theme_name, \
-							"reply_count":reply_count, \
-							"timestamp":timestamp, \
-							"begins_year":begins_year, "begins_month":begins_month, "begins_day":begins_day, \
-							"last_post_month":last_month, "last_post_day":last_day, "last_post_time": last_time})
+							"timestamp":timestamp})
 
 					db.sadd(base_id, theme_dict)
 
@@ -341,21 +335,23 @@ def parse_daily():
 
 				timestamp = time.mktime(last_post_datetime.timetuple())
 
-				themes_dict = ({"id":theme_id, "section":section_id, "name":theme_name, "url":theme_url, "timestamp":timestamp, "section_name":section_name})
+				themes_dict = ({"id":theme_id, "section":section_id, "name":theme_name, "timestamp":timestamp, "section_name":section_name})
 
-				db.sadd("daily", themes_dict)
+				db.zadd("daily", themes_dict, float(time.time()+20))
 
 #----------------------------------Get functions------------------------------------#
 def get_daily():
 
 	base_id = "daily"
 
-	if (db.scard(base_id)):
+	db.zremrangebyscore(base_id, 0, time.time());
+	if (db.zcard(base_id)):
 		thread.start_new_thread( parse_daily, () )
 	else:
 		parse_daily()
 
-	themes_strings = db.smembers(base_id)
+	
+	themes_strings = db.zrange(base_id, 0, -1)
 
 	themes = []
 	for t in themes_strings:
