@@ -26,11 +26,7 @@ def parse_theme(theme_section, theme_number):
 
 	base_id = theme_section + ":" + theme_number
 
-	url = ""
-	if (db.scard(base_id)):
-		url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.scard(base_id)) +".html"
-	else:
-		url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +".html"
+	url = BASEURL + "_light_message/" + theme_section + "/" + theme_number +"-"+ str(db.zcard(base_id)) +".html"
 
 	print url
 
@@ -55,8 +51,6 @@ def parse_theme(theme_section, theme_number):
 
 	# images = []
 	# i = 0
-	
-
 
 	for quote_tag in soup("blockquote"):
 		for hr_tag in quote_tag("hr"):
@@ -75,7 +69,7 @@ def parse_theme(theme_section, theme_number):
 
 	txt_arr = filter(None, txt_arr)
 
-	if (db.scard(base_id) < len(txt_arr)):
+	if (db.zcard(base_id) < len(txt_arr)):
 
 		for post in txt_arr:
 			s = BeautifulSoup(post)
@@ -111,7 +105,7 @@ def parse_theme(theme_section, theme_number):
 
 					post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text}
 
-					db.sadd(base_id, post_dict)
+					db.zadd(base_id, post_dict, timestamp)
 
 def parse_section(section_number):
 
@@ -377,27 +371,20 @@ def get_section(section_number):
 
 	return jsonify({"themes":themes})
 
-def get_theme(theme_section, theme_number, continue_from = 0, get_to = -1):
+def get_theme(theme_section, theme_number, continue_from = 0, get_to = time.time()):
 
 	base_id = theme_section + ":" + theme_number
 
-	if (db.scard(base_id)):
+	if (db.zcard(base_id)):
 		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
 	else:
 		parse_theme(theme_section, theme_number, )
 
-	posts_strings = db.smembers(base_id)
+	posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
 
 	posts = []
 	for p in posts_strings:
 		posts.append(ast.literal_eval(p))
-
-	# if (int(get_to) >= len(posts)): 
-	# 	get_to = -1 
-	# else: 
-	# 	get_to = int(get_to)
-
-	#posts = posts[int(continue_from):get_to]
 
 	return jsonify({"posts":posts})
 

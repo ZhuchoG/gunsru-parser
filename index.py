@@ -2,7 +2,7 @@
 
 import imp
 
-parser = imp.load_source('parser', './parser.py')
+parser = imp.load_source('parser', '/var/www/gunsru-api/parser.py')
 
 from parser import *
 
@@ -31,9 +31,13 @@ def show_section(section):
 def show_theme(section, theme):
 	return get_theme(section, theme)
 
-@app.route('/<string:section>/<string:theme>:<string:from_post>', methods=['POST', 'GET'])
-def show_theme_from_post(section, theme, from_post):
-	return get_theme(section, theme, from_post)
+@app.route('/<string:section>/<string:theme>:<float:from_time>', methods=['POST', 'GET'])
+def show_theme_from_time(section, theme, from_time):
+	return get_theme(section, theme, from_time)
+
+@app.route('/<string:section>/<string:theme>:<float:from_time>:<float:to_time>', methods=['POST', 'GET'])
+def show_theme_from_time_to_time(section, theme, from_time, to_time):
+	return get_theme(section, theme, from_time, to_time)
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0')
