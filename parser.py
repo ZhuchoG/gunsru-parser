@@ -103,7 +103,16 @@ def parse_theme(theme_section, theme_number):
 
 					html_text = unicode(s).strip().replace("talks", "forum")
 
-					post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text}
+					signature = ""
+
+					try: 
+						text = html_text.split("------------------")
+						html_text = text[0].strip()
+						signature = text[1].strip()
+					except:
+						pass
+
+					post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
 
 					db.zadd(base_id, post_dict, timestamp)
 
@@ -394,6 +403,25 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 		posts.append(ast.literal_eval(p))
 
 	return jsonify({"posts":posts})
+
+def get_all_sections():
+	base_id = "index"
+
+	subindexes_strings = db.smembers(base_id)
+	subindexes = []
+	for s in subindexes_strings:
+		subindexes.append(ast.literal_eval(s))
+
+	sections = []
+	for subindex in subindexes:
+		basepath = base_id + ":" + str(subindex["id"])
+
+		sections_strings = db.smembers(basepath)
+
+		for s in sections_strings:
+			sections.append(ast.literal_eval(s))
+
+	return jsonify({"sections":sections})
 
 def get_index():
 	base_id = "index"

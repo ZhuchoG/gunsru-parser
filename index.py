@@ -23,6 +23,10 @@ def index():
 def show_daily():
 	return get_daily()
 
+@app.route('/sections', methods=['POST', 'GET'])
+def sections():
+	return get_all_sections()
+
 @app.route('/<string:section>', methods=['POST', 'GET'])
 def show_section(section):
 	return get_section(section)
