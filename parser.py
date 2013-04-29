@@ -371,7 +371,7 @@ def get_section(section_number):
 
 	return jsonify({"themes":themes})
 
-def get_theme(theme_section, theme_number, continue_from = 0, get_to = time.time()):
+def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to = time.time()):
 
 	base_id = theme_section + ":" + theme_number
 
@@ -380,7 +380,14 @@ def get_theme(theme_section, theme_number, continue_from = 0, get_to = time.time
 	else:
 		parse_theme(theme_section, theme_number, )
 
-	posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+	if (count > 0 and continue_from > 0):
+		posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+		posts_strings = posts_strings[0:count]
+		print get_to
+	elif (count > 0):
+		posts_strings = db.zrange(base_id, 0, count - 1)
+	else:
+		posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
 
 	posts = []
 	for p in posts_strings:

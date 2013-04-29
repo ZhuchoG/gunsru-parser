@@ -31,13 +31,13 @@ def show_section(section):
 def show_theme(section, theme):
 	return get_theme(section, theme)
 
-@app.route('/<string:section>/<string:theme>:<float:from_time>', methods=['POST', 'GET'])
-def show_theme_from_time(section, theme, from_time):
-	return get_theme(section, theme, from_time)
+@app.route('/<string:section>/<string:theme>-<int:count>', methods=['POST', 'GET'])
+def show_theme_count(section, theme, count):
+	return get_theme(section, theme, count)
 
-@app.route('/<string:section>/<string:theme>:<float:from_time>:<float:to_time>', methods=['POST', 'GET'])
-def show_theme_from_time_to_time(section, theme, from_time, to_time):
-	return get_theme(section, theme, from_time, to_time)
+@app.route('/<string:section>/<string:theme>:<float:from_time>-<int:count>', methods=['POST', 'GET'])
+def show_theme_from_time(section, theme, count, from_time):
+	return get_theme(section, theme, count, from_time)
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0')
