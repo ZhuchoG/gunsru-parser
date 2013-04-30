@@ -30,9 +30,11 @@ def parse_theme(theme_section, theme_number):
 
 	print url
 
-	getSite = urllib2.urlopen(url)
+	getSite = urllib2.urlopen(url, timeout=300)
 
-	soup = BeautifulSoup(getSite, from_encoding = "windows-1251")
+	site = getSite.read().replace("[/QUOTE]", "</blockquote>").replace("[/B]", "</b>").replace("[", "<").replace("]", ">").replace("pes_i_kot", "</blockquote>")
+
+	soup = BeautifulSoup(site, from_encoding = "windows-1251")
 
 	soup.head.decompose()
 
@@ -49,14 +51,21 @@ def parse_theme(theme_section, theme_number):
 		except:
 			pass
 
+	# for fail_tag in soup.find_all(text="[/QUOTE]")
+	# 	fail_tag
+
 	# images = []
 	# i = 0
 
 	for quote_tag in soup("blockquote"):
 		for hr_tag in quote_tag("hr"):
 			hr_tag.decompose()
+		#quote_tag.string = str(quote_tag).replace("[/QUOTE]", "</blockquote>")
+		#quote_tag.string = str(quote_tag).replace("[/B]", "</b>")
 		# q = soup.new_string("|"+quote_tag.get_text()+"|")
 		# quote_tag.replace_with(q)
+
+	#print soup.prettify().encode("utf-8", errors="ignore")
 
 	soup = BeautifulSoup(soup.prettify())
 
