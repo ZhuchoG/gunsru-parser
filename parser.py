@@ -125,6 +125,75 @@ def parse_theme(theme_section, theme_number):
 
 					db.zadd(base_id, post_dict, timestamp)
 
+def parse_theme_by_pages(theme_section, theme_number):
+	base_id = theme_section + ":" + theme_number
+
+	url = BASEURL + "message/" + theme_section + "/" + theme_number +"-"+ str(db.zcard(base_id)) +".html"
+
+	print url
+
+	getSite = urllib2.urlopen(url, timeout=300)
+
+	site = getSite.read().replace("[/QUOTE]", "</blockquote>").replace("[/B]", "</b>").replace("[", "<").replace("]", ">").replace("pes_i_kot", "</blockquote>")
+
+	soup = BeautifulSoup(site, from_encoding = "windows-1251")
+
+	soup.head.decompose()
+
+	soup = BeautifulSoup(soup.prettify())
+
+	soup.body.unwrap()
+	soup.html.unwrap()
+
+	print unicode(soup)
+
+	# if (db.zcard(base_id) < len(txt_arr)):
+
+	# 	for post in txt_arr:
+	# 		s = BeautifulSoup(post)
+
+	# 		if (s.body):
+
+	# 			s.body.unwrap()
+	# 			s.html.unwrap()
+				
+	# 			# for img_tag in soup("img"):
+	# 			# 	#images.append(img_tag['src'])
+	# 			# 	img = soup.new_tag('img')
+	# 			# 	img['src'] = img_tag['src'] #.replace("talks", "forum")
+	# 			# 	img_tag.replace_with(img)
+
+	# 			for p_tag in s("p"):
+	# 				p_tag.unwrap()
+
+	# 			if (s.small):
+
+	# 				user = s.b.get_text().strip()
+	# 				post_date = s.small.get_text().strip().split()[0]
+	# 				post_time = s.small.get_text().strip().split()[1]
+
+	# 				post_datetime = datetime.strptime(s.small.get_text().strip(),'%d-%m-%Y %H:%M')
+
+	# 				timestamp = time.mktime(post_datetime.timetuple())
+
+	# 				s.b.decompose()
+	# 				s.small.decompose()
+
+	# 				html_text = unicode(s).strip().replace("talks", "forum")
+
+	# 				signature = ""
+
+	# 				try: 
+	# 					text = html_text.split("------------------")
+	# 					html_text = text[0].strip()
+	# 					signature = text[1].strip()
+	# 				except:
+	# 					pass
+
+	# 				post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
+
+	# 				db.zadd(base_id, post_dict, timestamp)
+
 def parse_section(section_number):
 
 	base_id = "section:" + str(section_number)
