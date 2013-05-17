@@ -128,24 +128,64 @@ def parse_theme(theme_section, theme_number):
 def parse_theme_by_pages(theme_section, theme_number):
 	base_id = theme_section + ":" + theme_number
 
-	url = BASEURL + "message/" + theme_section + "/" + theme_number +"-"+ str(db.zcard(base_id)) +".html"
-
-	print url
+	url = BASEURL + "message/" + theme_section + "/" + theme_number +".html"
 
 	getSite = urllib2.urlopen(url, timeout=300)
 
-	site = getSite.read().replace("[/QUOTE]", "</blockquote>").replace("[/B]", "</b>").replace("[", "<").replace("]", ">").replace("pes_i_kot", "</blockquote>")
+	#site = getSite.read().replace("[/QUOTE]", "</blockquote>").replace("[/B]", "</b>").replace("[", "<").replace("]", ">").replace("pes_i_kot", "</blockquote>")
 
-	soup = BeautifulSoup(site, from_encoding = "windows-1251")
+	soup = BeautifulSoup(getSite, from_encoding = "koi8-r")
 
-	soup.head.decompose()
 
-	soup = BeautifulSoup(soup.prettify())
+	pages_tag = soup.find(cellpadding="0", cellspacing="0", frame="border", rules="none", style="border-color: #000080;font-size: 10pt;border-width: 1;")
 
-	soup.body.unwrap()
-	soup.html.unwrap()
+	if pages_tag:
+		pages_count = int(pages_tag.get_text().split(":")[1].strip())
+	else:
+		pages_count = 1
 
-	print unicode(soup)
+	for i in range(pages_count):
+
+		url = BASEURL + "message/" + theme_section + "/" + theme_number + "-" + str(i) +".html"
+
+		getSite = urllib2.urlopen(url, timeout=300)
+
+		site = getSite.read().replace("[/QUOTE]", "</blockquote>").replace("[/B]", "</b>").replace("[", "<").replace("]", ">").replace("pes_i_kot", "</blockquote>")
+
+		soup = BeautifulSoup(site, from_encoding = "koi8-r")
+
+		for post in soup.find_all(border="0", cellpadding="2", cellspacing="0", width="99%"):
+			s = BeautifulSoup(unicode(post))
+
+			user_tag = s.find(face="Verdana, Arial", size="2")
+			user = user_tag.get_text().strip()
+			user_tag.decompose()
+
+			time_tag = s.find_all(color="", face="Verdana, Arial", size="1")[1]
+			post_datetime = datetime.strptime(time_tag.get_text(),'posted %d-%m-%Y %H:%M')
+			timestamp = time.mktime(post_datetime.timetuple())
+
+			post = unicode(s.find(face="Verdana, Arial", size="2")).split("<hr/>", 1)[1]
+
+			post = BeautifulSoup(post)
+
+			post.html.unwrap()
+			post.body.unwrap()
+
+			html_text = unicode(post)
+
+			try: 
+				text = html_text.split("------------------")
+				html_text = text[0].strip()
+				signature = text[1].strip()
+			except:
+				signature = ""
+
+			post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
+
+			db.zadd(base_id, post_dict, timestamp)
+
+	#print unicode().encode("utf-8", "ignore")
 
 	# if (db.zcard(base_id) < len(txt_arr)):
 
