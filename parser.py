@@ -144,7 +144,7 @@ def parse_theme_by_pages(theme_section, theme_number):
 	else:
 		pages_count = 1
 
-	for i in range(pages_count):
+	for i in range(pages_count + 1):
 
 		url = BASEURL + "message/" + theme_section + "/" + theme_number + "-" + str(i) +".html"
 
