@@ -51,21 +51,9 @@ def parse_theme(theme_section, theme_number):
 		except:
 			pass
 
-	# for fail_tag in soup.find_all(text="[/QUOTE]")
-	# 	fail_tag
-
-	# images = []
-	# i = 0
-
 	for quote_tag in soup("blockquote"):
 		for hr_tag in quote_tag("hr"):
 			hr_tag.decompose()
-		#quote_tag.string = str(quote_tag).replace("[/QUOTE]", "</blockquote>")
-		#quote_tag.string = str(quote_tag).replace("[/B]", "</b>")
-		# q = soup.new_string("|"+quote_tag.get_text()+"|")
-		# quote_tag.replace_with(q)
-
-	#print soup.prettify().encode("utf-8", errors="ignore")
 
 	soup = BeautifulSoup(soup.prettify())
 
@@ -87,12 +75,6 @@ def parse_theme(theme_section, theme_number):
 
 				s.body.unwrap()
 				s.html.unwrap()
-				
-				# for img_tag in soup("img"):
-				# 	#images.append(img_tag['src'])
-				# 	img = soup.new_tag('img')
-				# 	img['src'] = img_tag['src'] #.replace("talks", "forum")
-				# 	img_tag.replace_with(img)
 
 				for p_tag in s("p"):
 					p_tag.unwrap()
@@ -132,8 +114,6 @@ def parse_theme_by_pages(theme_section, theme_number):
 	url = BASEURL + "message/" + theme_section + "/" + theme_number +".html"
 
 	getSite = urllib2.urlopen(url, timeout=300)
-
-	#site = getSite.read().replace("[/QUOTE]", "</blockquote>").replace("[/B]", "</b>").replace("[", "<").replace("]", ">").replace("pes_i_kot", "</blockquote>")
 
 	soup = BeautifulSoup(getSite, from_encoding = "koi8-r")
 
@@ -204,9 +184,6 @@ def parse_section(section_number):
 
 	for script_tag in soup("script"):
 		script_tag.decompose()
-
-	# for font_tag in soup("font"):
-	# 	font_tag.unwrap()
 
 	for img in soup("img"):
 		img.decompose()
@@ -376,9 +353,6 @@ def parse_daily():
 
 	for script_tag in soup("script"):
 		script_tag.decompose()
-
-	# for font_tag in soup("font"):
-	# 	font_tag.unwrap()
 
 	for img in soup("img"):
 		img.decompose()
