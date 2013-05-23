@@ -285,10 +285,9 @@ def parse_section(section_number):
 					theme_name = table_row.find_all(width = "46%")[0].get_text().strip().split('\n')[0]
 					
 					theme_dict = ({"id":theme_id, "section":section_id, \
-							"creator":creator, "name":theme_name, \
-							"timestamp":timestamp})
+							"creator":creator, "name":theme_name})
 
-					db.sadd(base_id, theme_dict)
+					db.zadd(base_id, theme_dict, timestamp)
 
 				except:
 					pass
@@ -413,16 +412,18 @@ def get_section(section_number):
 
 	base_id = "section:" + str(section_number)
 
-	if (db.scard(base_id)):
+	if (db.zcard(base_id)):
 		thread.start_new_thread( parse_section, (section_number, ) )
 	else:
 		parse_section(section_number)
 
-	themes_strings = db.smembers(base_id)
+	themes_strings = db.zrange(base_id, 0, -1)
 
 	themes = []
 	for t in themes_strings:
-		themes.append(ast.literal_eval(t))
+		t_d = ast.literal_eval(t)
+		t_d["timestamp"] = db.zscore(base_id, t)
+		themes.append(t_d)
 
 	return jsonify({"themes":themes})
 
