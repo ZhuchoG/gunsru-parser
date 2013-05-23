@@ -126,6 +126,7 @@ def parse_theme(theme_section, theme_number):
 					db.zadd(base_id, post_dict, timestamp)
 
 def parse_theme_by_pages(theme_section, theme_number):
+
 	base_id = theme_section + ":" + theme_number
 
 	url = BASEURL + "message/" + theme_section + "/" + theme_number +".html"
@@ -502,10 +503,10 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 
 	base_id = theme_section + ":" + theme_number
 
-	if (db.zcard(base_id)):
-		thread.start_new_thread( parse_theme, (theme_section, theme_number, ) )
-	else:
-		parse_theme(theme_section, theme_number, )
+	#if (db.zcard(base_id)):
+	thread.start_new_thread( parse_theme_by_pages, (theme_section, theme_number, ) )
+	# else:
+	# 	parse_theme(theme_section, theme_number, )
 
 	if (count > 0 and continue_from > 0):
 		posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
