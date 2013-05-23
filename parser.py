@@ -145,7 +145,9 @@ def parse_theme_by_pages(theme_section, theme_number):
 	else:
 		pages_count = 1
 
-	for i in range(pages_count + 1):
+	begin_page = pages_count - db.zcard(base_id)/20
+
+	for i in range(begin_page, pages_count + 1):
 
 		url = BASEURL + "message/" + theme_section + "/" + theme_number + "-" + str(i) +".html"
 
@@ -185,55 +187,6 @@ def parse_theme_by_pages(theme_section, theme_number):
 			post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
 
 			db.zadd(base_id, post_dict, timestamp)
-
-	#print unicode().encode("utf-8", "ignore")
-
-	# if (db.zcard(base_id) < len(txt_arr)):
-
-	# 	for post in txt_arr:
-	# 		s = BeautifulSoup(post)
-
-	# 		if (s.body):
-
-	# 			s.body.unwrap()
-	# 			s.html.unwrap()
-				
-	# 			# for img_tag in soup("img"):
-	# 			# 	#images.append(img_tag['src'])
-	# 			# 	img = soup.new_tag('img')
-	# 			# 	img['src'] = img_tag['src'] #.replace("talks", "forum")
-	# 			# 	img_tag.replace_with(img)
-
-	# 			for p_tag in s("p"):
-	# 				p_tag.unwrap()
-
-	# 			if (s.small):
-
-	# 				user = s.b.get_text().strip()
-	# 				post_date = s.small.get_text().strip().split()[0]
-	# 				post_time = s.small.get_text().strip().split()[1]
-
-	# 				post_datetime = datetime.strptime(s.small.get_text().strip(),'%d-%m-%Y %H:%M')
-
-	# 				timestamp = time.mktime(post_datetime.timetuple())
-
-	# 				s.b.decompose()
-	# 				s.small.decompose()
-
-	# 				html_text = unicode(s).strip().replace("talks", "forum")
-
-	# 				signature = ""
-
-	# 				try: 
-	# 					text = html_text.split("------------------")
-	# 					html_text = text[0].strip()
-	# 					signature = text[1].strip()
-	# 				except:
-	# 					pass
-
-	# 				post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
-
-	# 				db.zadd(base_id, post_dict, timestamp)
 
 def parse_section(section_number):
 
