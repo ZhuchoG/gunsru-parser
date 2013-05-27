@@ -417,7 +417,7 @@ def get_section(section_number):
 	else:
 		parse_section(section_number)
 
-	themes_strings = db.zrange(base_id, 0, -1)
+	themes_strings = db.zrevrange(base_id, 0, -1)
 
 	themes = []
 	for t in themes_strings:
