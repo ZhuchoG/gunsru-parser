@@ -144,8 +144,11 @@ def parse_theme_by_pages(theme_section, theme_number):
 			user = user_tag.get_text().strip()
 			user_tag.decompose()
 
-			for right in s.find(align = "right"):
-				right.decompose()
+			for right in s.find_all(align = "right"):
+				try:
+					right.decompose()
+				except:
+					pass
 
 			time_tag = s.find_all(color="", face="Verdana, Arial", size="1")[1]
 			post_datetime = datetime.strptime(time_tag.get_text(),'posted %d-%m-%Y %H:%M')
