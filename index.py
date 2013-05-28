@@ -25,7 +25,7 @@ def show_daily():
 
 @app.route('/sections', methods=['POST', 'GET'])
 def sections():
-	return get_all_sections()
+	return get_sections_list()
 
 @app.route('/<string:section>', methods=['POST', 'GET'])
 def show_section(section):

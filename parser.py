@@ -473,13 +473,20 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 
 	return jsonify({"posts":posts})
 
-def get_all_sections():
+def get_sections_list():
 	base_id = "index"
+
+	if (not db.smembers(base_id)):
+		parse_index()
 
 	subindexes_strings = db.smembers(base_id)
 	subindexes = []
 	for s in subindexes_strings:
-		subindexes.append(ast.literal_eval(s))
+		sub = ast.literal_eval(s)
+		subindexes.append(sub)
+
+		if (not db.smembers("subindex:"+str(sub["id"]))):
+			parse_subindex(sub["id"])
 
 	sections = []
 	for subindex in subindexes:
