@@ -320,7 +320,7 @@ def parse_index():
 			section_name = a_tag.get_text().strip()
 			section_id = int(section_url.rsplit('/',1)[1].split('.',1)[0])
 
-			sections_dict = ({"id":section_id, "name":section_name, "url":section_url})
+			sections_dict = ({"id":section_id, "name":section_name})
 
 			db.sadd("index", sections_dict)
 
@@ -347,7 +347,7 @@ def parse_subindex(subindex_id):
 			section_name = a_tag.get_text().strip()
 			section_id = section_url.rsplit('/',1)[1].split('.',1)[0]
 
-			sections_dict = ({"id":section_id, "name":section_name, "url":section_url})
+			sections_dict = ({"id":section_id, "name":section_name})
 
 			db.sadd(base_id, sections_dict)
 
