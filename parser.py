@@ -107,7 +107,7 @@ def parse_theme(theme_section, theme_number):
 
 					db.zadd(base_id, post_dict, timestamp)
 
-def parse_theme_by_pages(theme_section, theme_number):
+def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 
 	base_id = theme_section + ":" + theme_number
 
@@ -120,14 +120,19 @@ def parse_theme_by_pages(theme_section, theme_number):
 
 	pages_tag = soup.find(cellpadding="0", cellspacing="0", frame="border", rules="none", style="border-color: #000080;font-size: 10pt;border-width: 1;")
 
-	if pages_tag:
+	if (pages_tag or not onepage):
 		pages_count = int(pages_tag.get_text().split(":")[1].strip())
 	else:
 		pages_count = 1
 
 	begin_page = db.zcard(base_id)/20
 
-	for i in range(begin_page, pages_count + 1):
+	if (onepage):
+		end_page = begin_page + 1
+	else:
+		end_page = pages_count + 1
+
+	for i in range(begin_page, end_page):
 
 		url = BASEURL + "message/" + theme_section + "/" + theme_number + "-" + str(i) +".html"
 
@@ -437,19 +442,30 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 
 	base_id = theme_section + ":" + theme_number
 
-	#if (db.zcard(base_id)):
-	thread.start_new_thread( parse_theme_by_pages, (theme_section, theme_number, ) )
-	# else:
-	# 	parse_theme(theme_section, theme_number, )
+	if (db.zcard(base_id)):
+		thread.start_new_thread( parse_theme_by_pages, (theme_section, theme_number, ) )
+	else:
+	 	parse_theme_by_pages(theme_section, theme_number, onepage = True)
 
 	if (count > 0 and continue_from > 0):
 		posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
 		posts_strings = posts_strings[0:count]
-		print get_to
 	elif (count > 0):
 		posts_strings = db.zrange(base_id, 0, count - 1)
 	else:
 		posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+
+	if (not len(posts_strings)):
+		parse_theme_by_pages(theme_section, theme_number, onepage = True)
+
+		if (count > 0 and continue_from > 0):
+			posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+			posts_strings = posts_strings[0:count]
+		elif (count > 0):
+			posts_strings = db.zrange(base_id, 0, count - 1)
+		else:
+			posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+
 
 	posts = []
 	for p in posts_strings:
