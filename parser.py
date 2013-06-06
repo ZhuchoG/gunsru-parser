@@ -125,7 +125,9 @@ def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 	else:
 		pages_count = 1
 
-	begin_page = db.zcard(base_id)/20 - 1
+	begin_page = db.zcard(base_id)/20
+	if (begin_page > 0):
+		begin_page = begin_page - 1
 
 	if (onepage):
 		end_page = begin_page + 1
