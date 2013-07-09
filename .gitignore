@@ -35,3 +35,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+blockuotes_test.py
+copy_base.py
+enc.py
+test
