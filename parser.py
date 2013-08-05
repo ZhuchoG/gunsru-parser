@@ -92,9 +92,9 @@ def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 			except:
 				signature = ""
 
-			post_dict = {"user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
+			post_dict = {"id":db.zcard(base_id), "user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
 
-			db.zadd(base_id, post_dict, timestamp)
+			db.zadd(base_id, post_dict, db.zcard(base_id))
 
 def parse_section(section_number):
 
