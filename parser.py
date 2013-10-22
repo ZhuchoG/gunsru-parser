@@ -16,11 +16,23 @@ BASEURL = "http://forum.guns.ru/forum"
 
 db = Redis()
 
-proxy_support = urllib2.ProxyHandler({"http":"http://192.168.0.169:3128"})
-opener = urllib2.build_opener(proxy_support)
-urllib2.install_opener(opener)
+# proxy_support = urllib2.ProxyHandler({"http":"http://192.168.0.169:3128"})
+# opener = urllib2.build_opener(proxy_support)
+# urllib2.install_opener(opener)
 
-#-------------------------------Parsing functions------------------------------------# 
+########     ###    ########   ######  #### ##    ##  ######      ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######     
+##     ##   ## ##   ##     ## ##    ##  ##  ###   ## ##    ##     ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ##    
+##     ##  ##   ##  ##     ## ##        ##  ####  ## ##           ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##          
+########  ##     ## ########   ######   ##  ## ## ## ##   ####    ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######     
+##        ######### ##   ##         ##  ##  ##  #### ##    ##     ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ##    
+##        ##     ## ##    ##  ##    ##  ##  ##   ### ##    ##     ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ##    
+##        ##     ## ##     ##  ######  #### ##    ##  ######      ##        #######  ##    ##  ######     ##    ####  #######  ##    ##  ######     
+#  _   _                         
+# | | | |                        
+# | |_| |__   ___ _ __ ___   ___ 
+# | __| '_ \ / _ \ '_ ` _ \ / _ \
+# | |_| | | |  __/ | | | | |  __/
+#  \__|_| |_|\___|_| |_| |_|\___|
 
 def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 
@@ -95,6 +107,12 @@ def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 			post_dict = {"id":db.zcard(base_id), "user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
 
 			db.zadd(base_id, post_dict, db.zcard(base_id))
+#                _   _             
+#               | | (_)            
+#  ___  ___  ___| |_ _  ___  _ __  
+# / __|/ _ \/ __| __| |/ _ \| '_ \ 
+# \__ \  __/ (__| |_| | (_) | | | |
+# |___/\___|\___|\__|_|\___/|_| |_|
 
 def parse_section(section_number):
 
@@ -219,6 +237,12 @@ def parse_section(section_number):
 
 				except:
 					pass
+#  _           _           
+# (_)         | |          
+#  _ _ __   __| | _____  __
+# | | '_ \ / _` |/ _ \ \/ /
+# | | | | | (_| |  __/>  < 
+# |_|_| |_|\__,_|\___/_/\_\
 
 def parse_index():
 	url = BASEURL + "index"
@@ -315,7 +339,20 @@ def parse_daily():
 
 				db.zadd("daily", themes_dict, float(time.time()+20))
 
-#----------------------------------Get functions------------------------------------#
+ ######   ######## ########    ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######  
+##    ##  ##          ##       ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ## 
+##        ##          ##       ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##       
+##   #### ######      ##       ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######  
+##    ##  ##          ##       ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ## 
+##    ##  ##          ##       ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ## 
+ ######   ########    ##       ##        #######  ##    ##  ######     ##    ####  #######  ##    ##  ######  
+#  _           _     _   _                              
+# | |         | |   | | | |                             
+# | |__   ___ | |_  | |_| |__   ___ _ __ ___   ___  ___ 
+# | '_ \ / _ \| __| | __| '_ \ / _ \ '_ ` _ \ / _ \/ __|
+# | | | | (_) | |_  | |_| | | |  __/ | | | | |  __/\__ \
+# |_| |_|\___/ \__|  \__|_| |_|\___|_| |_| |_|\___||___/
+
 def get_daily():
 
 	base_id = "daily"
@@ -334,7 +371,12 @@ def get_daily():
 		themes.append(ast.literal_eval(t))
 
 	return jsonify({"themes":themes})
-
+#                _   _             
+#               | | (_)            
+#  ___  ___  ___| |_ _  ___  _ __  
+# / __|/ _ \/ __| __| |/ _ \| '_ \ 
+# \__ \  __/ (__| |_| | (_) | | | |
+# |___/\___|\___|\__|_|\___/|_| |_|
 
 def get_section(section_number):
 
@@ -354,6 +396,12 @@ def get_section(section_number):
 		themes.append(t_d)
 
 	return jsonify({"themes":themes})
+#  _   _                         
+# | | | |                        
+# | |_| |__   ___ _ __ ___   ___ 
+# | __| '_ \ / _ \ '_ ` _ \ / _ \
+# | |_| | | |  __/ | | | | |  __/
+#  \__|_| |_|\___|_| |_| |_|\___|
 
 def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to = time.time()):
 
@@ -389,6 +437,12 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 		posts.append(ast.literal_eval(p))
 
 	return jsonify({"posts":posts})
+#                _   _                   _ _     _   
+#               | | (_)                 | (_)   | |  
+#  ___  ___  ___| |_ _  ___  _ __  ___  | |_ ___| |_ 
+# / __|/ _ \/ __| __| |/ _ \| '_ \/ __| | | / __| __|
+# \__ \  __/ (__| |_| | (_) | | | \__ \ | | \__ \ |_ 
+# |___/\___|\___|\__|_|\___/|_| |_|___/ |_|_|___/\__|
 
 def get_sections_list():
 	base_id = "index"
@@ -415,6 +469,12 @@ def get_sections_list():
 			sections.append(ast.literal_eval(s))
 
 	return jsonify({"sections":sections})
+#  _           _           
+# (_)         | |          
+#  _ _ __   __| | _____  __
+# | | '_ \ / _` |/ _ \ \/ /
+# | | | | | (_| |  __/>  < 
+# |_|_| |_|\__,_|\___/_/\_\
 
 def get_index():
 	base_id = "index"
@@ -431,6 +491,12 @@ def get_index():
 		sections.append(ast.literal_eval(s))
 
 	return jsonify({"sections":sections})
+#            _     _           _           
+#           | |   (_)         | |          
+#  ___ _   _| |__  _ _ __   __| | _____  __
+# / __| | | | '_ \| | '_ \ / _` |/ _ \ \/ /
+# \__ \ |_| | |_) | | | | | (_| |  __/>  < 
+# |___/\__,_|_.__/|_|_| |_|\__,_|\___/_/\_\
 
 def get_subindex(subindex_id):
 	base_id = "index:" + str(subindex_id)
