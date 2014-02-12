@@ -16,26 +16,7 @@ BASEURL = "http://forum.guns.ru/forum"
 
 db = Redis()
 
-# proxy_support = urllib2.ProxyHandler({"http":"http://192.168.0.169:3128"})
-# opener = urllib2.build_opener(proxy_support)
-# urllib2.install_opener(opener)
-
-########     ###    ########   ######  #### ##    ##  ######      ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######     
-##     ##   ## ##   ##     ## ##    ##  ##  ###   ## ##    ##     ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ##    
-##     ##  ##   ##  ##     ## ##        ##  ####  ## ##           ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##          
-########  ##     ## ########   ######   ##  ## ## ## ##   ####    ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######     
-##        ######### ##   ##         ##  ##  ##  #### ##    ##     ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ##    
-##        ##     ## ##    ##  ##    ##  ##  ##   ### ##    ##     ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ##    
-##        ##     ## ##     ##  ######  #### ##    ##  ######      ##        #######  ##    ##  ######     ##    ####  #######  ##    ##  ######     
-
-	                                  
-	##### #    # ###### #    # ###### 
-	  #   #    # #      ##  ## #      
-	  #   ###### #####  # ## # #####  
-	  #   #    # #      #    # #      
-	  #   #    # #      #    # #      
-	  #   #    # ###### #    # ###### 
-	                                  
+#-------------------------------Parsing functions------------------------------------# 
 
 def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 
@@ -109,16 +90,8 @@ def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 
 			post_dict = {"id":db.zcard(base_id), "user":user, "timestamp":timestamp, "html_text":html_text, "signature":signature}
 
-			db.zadd(base_id, post_dict, db.zcard(base_id))
+			db.zadd(base_id, post_dict, timestamp)
 
-	                                           
-	 ####  ######  ####  ##### #  ####  #    # 
-	#      #      #    #   #   # #    # ##   # 
-	 ####  #####  #        #   # #    # # #  # 
-	     # #      #        #   # #    # #  # # 
-	#    # #      #    #   #   # #    # #   ## 
-	 ####  ######  ####    #   #  ####  #    # 
-	                                           
 def parse_section(section_number):
 
 	base_id = "section:" + str(section_number)
@@ -243,14 +216,6 @@ def parse_section(section_number):
 				except:
 					pass
 
-	                              
-	# #    # #####  ###### #    # 
-	# ##   # #    # #       #  #  
-	# # #  # #    # #####    ##   
-	# #  # # #    # #        ##   
-	# #   ## #    # #       #  #  
-	# #    # #####  ###### #    # 
-	                              
 def parse_index():
 	url = BASEURL + "index"
 
@@ -346,23 +311,7 @@ def parse_daily():
 
 				db.zadd("daily", themes_dict, float(time.time()+20))
 
- ######   ######## ########    ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######  
-##    ##  ##          ##       ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ## 
-##        ##          ##       ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##       
-##   #### ######      ##       ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######  
-##    ##  ##          ##       ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ## 
-##    ##  ##          ##       ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ## 
- ######   ########    ##       ##        #######  ##    ##  ######     ##    ####  #######  ##    ##  ######  
-
-	                                                                
-	#    #  ####  #####    ##### #    # ###### #    # ######  ####  
-	#    # #    #   #        #   #    # #      ##  ## #      #      
-	###### #    #   #        #   ###### #####  # ## # #####   ####  
-	#    # #    #   #        #   #    # #      #    # #           # 
-	#    # #    #   #        #   #    # #      #    # #      #    # 
-	#    #  ####    #        #   #    # ###### #    # ######  ####  
-	                                                                
-
+#----------------------------------Get functions------------------------------------#
 def get_daily():
 
 	base_id = "daily"
@@ -382,14 +331,6 @@ def get_daily():
 
 	return jsonify({"themes":themes})
 
-	                                           
-	 ####  ######  ####  ##### #  ####  #    # 
-	#      #      #    #   #   # #    # ##   # 
-	 ####  #####  #        #   # #    # # #  # 
-	     # #      #        #   # #    # #  # # 
-	#    # #      #    #   #   # #    # #   ## 
-	 ####  ######  ####    #   #  ####  #    # 
-	                                           
 
 def get_section(section_number):
 
@@ -410,18 +351,12 @@ def get_section(section_number):
 
 	return jsonify({"themes":themes})
 
-	                                  
-	##### #    # ###### #    # ###### 
-	  #   #    # #      ##  ## #      
-	  #   ###### #####  # ## # #####  
-	  #   #    # #      #    # #      
-	  #   #    # #      #    # #      
-	  #   #    # ###### #    # ###### 
-	                                  
-
-def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to = time.time()):
+def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to = 0):
 
 	base_id = theme_section + ":" + theme_number
+
+	if (not get_to):
+		get_to = db.zcard(base_id)
 
 	if (db.zcard(base_id)):
 		thread.start_new_thread( parse_theme_by_pages, (theme_section, theme_number, ) )
@@ -429,8 +364,7 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 	 	parse_theme_by_pages(theme_section, theme_number, onepage = True)
 
 	if (count > 0 and continue_from > 0):
-		posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
-		posts_strings = posts_strings[0:count]
+		posts_strings = db.zrangebyscore(base_id, continue_from, continue_from + count)
 	elif (count > 0):
 		posts_strings = db.zrange(base_id, 0, count - 1)
 	else:
@@ -440,12 +374,12 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 		parse_theme_by_pages(theme_section, theme_number, onepage = True)
 
 		if (count > 0 and continue_from > 0):
-			posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+			posts_strings = db.zrangebyscore(base_id, continue_from, continue_from + 9999999999)
 			posts_strings = posts_strings[0:count]
 		elif (count > 0):
 			posts_strings = db.zrange(base_id, 0, count - 1)
 		else:
-			posts_strings = db.zrangebyscore(base_id, continue_from, get_to)
+			posts_strings = db.zrangebyscore(base_id, continue_from, continue_from + 9999999999)
 
 
 	posts = []
@@ -454,14 +388,6 @@ def get_theme(theme_section, theme_number, count = 0, continue_from = 0, get_to 
 
 	return jsonify({"posts":posts})
 
-	                                                                           
-	 ####  ######  ####  ##### #  ####  #    #  ####     #      #  ####  ##### 
-	#      #      #    #   #   # #    # ##   # #         #      # #        #   
-	 ####  #####  #        #   # #    # # #  #  ####     #      #  ####    #   
-	     # #      #        #   # #    # #  # #      #    #      #      #   #   
-	#    # #      #    #   #   # #    # #   ## #    #    #      # #    #   #   
-	 ####  ######  ####    #   #  ####  #    #  ####     ###### #  ####    #   
-	                                                                           
 def get_sections_list():
 	base_id = "index"
 
@@ -488,15 +414,6 @@ def get_sections_list():
 
 	return jsonify({"sections":sections})
 
-	                              
-	# #    # #####  ###### #    # 
-	# ##   # #    # #       #  #  
-	# # #  # #    # #####    ##   
-	# #  # # #    # #        ##   
-	# #   ## #    # #       #  #  
-	# #    # #####  ###### #    # 
-	                              
-
 def get_index():
 	base_id = "index"
 
@@ -512,15 +429,6 @@ def get_index():
 		sections.append(ast.literal_eval(s))
 
 	return jsonify({"sections":sections})
-
-	                                                   
-	 ####  #    # #####  # #    # #####  ###### #    # 
-	#      #    # #    # # ##   # #    # #       #  #  
-	 ####  #    # #####  # # #  # #    # #####    ##   
-	     # #    # #    # # #  # # #    # #        ##   
-	#    # #    # #    # # #   ## #    # #       #  #  
-	 ####   ####  #####  # #    # #####  ###### #    # 
-	                                                   
 
 def get_subindex(subindex_id):
 	base_id = "index:" + str(subindex_id)

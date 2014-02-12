@@ -39,9 +39,9 @@ def show_theme(section, theme):
 def show_theme_count(section, theme, count):
 	return get_theme(section, theme, count)
 
-@app.route('/<string:section>/<string:theme>:<float:from_time>-<int:count>', methods=['POST', 'GET'])
-def show_theme_from_time(section, theme, count, from_time):
-	return get_theme(section, theme, count, from_time)
+@app.route('/<string:section>/<string:theme>:<float:continue_from>-<int:count>', methods=['POST', 'GET'])
+def show_theme_from_time(section, theme, count, continue_from):
+	return get_theme(section, theme, count, continue_from)
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0')
