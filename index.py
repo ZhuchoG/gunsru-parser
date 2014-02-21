@@ -2,7 +2,7 @@
 
 import imp
 
-parser = imp.load_source('parser', '/var/www/gunsru-api/parser.py')
+parser = imp.load_source('parser', './parser.py')
 
 from parser import *
 
@@ -22,6 +22,10 @@ def index():
 @app.route('/daily')
 def show_daily():
 	return get_daily()
+
+@app.route('/user/<string:user>')
+def show_user(user):
+	return get_user(user)
 
 @app.route('/sections', methods=['POST', 'GET'])
 def sections():

@@ -3,6 +3,7 @@ import urllib2
 import json
 import ast
 import thread
+import re
 
 from datetime import date,datetime
 import time
@@ -14,9 +15,60 @@ from redis import Redis
 
 BASEURL = "http://forum.guns.ru/forum"
 
-db = Redis()
+db = Redis('192.168.0.166')
 
 #-------------------------------Parsing functions------------------------------------# 
+def parse_user(user):
+	base_id = "user:" + user
+
+	url = db.get(base_id + ":profile_url")
+
+	if (not url):
+
+		url = BASEURL + "misc/search/unsearch?user=" + user + "&number=0"
+
+		getSite = urllib2.urlopen(url, timeout=300)
+
+		soup = BeautifulSoup(getSite, from_encoding = "koi8-r")
+
+		user_tag = soup.find(face="Courier New", size="5")
+
+		url = user_tag.a["href"]
+
+		db.set(base_id + ":profile_url", url)
+
+	getSite = urllib2.urlopen(url, timeout=300)
+
+	soup = BeautifulSoup(getSite, from_encoding = "koi8-r")
+
+	soup = soup.find(border="0", cellpadding="4", cellspacing="1", width="99%", align="center")
+
+	for td in soup("td"):
+		td.unwrap()
+
+	for font in soup("font"):
+		font.unwrap()
+
+	for br in soup("br"):
+		br.unwrap()
+
+	for b in soup("b"):
+		b.unwrap()
+
+	for table in soup("table"):
+		table.unwrap()
+
+	# user_dict = []
+	# for tr in soup("tr"):
+	# 	user_dict.append(tr.get_text())
+
+	for field in soup.find_all("tr", text=re.compile("Name:")):
+		field.decompose()
+
+	#soup.find_all(text="Name")[0].get_text()
+
+	return soup.prettify() #jsonify({"user" : user_dict})
+
 
 def parse_theme_by_pages(theme_section, theme_number, onepage = False):
 
@@ -446,3 +498,5 @@ def get_subindex(subindex_id):
 
 	return jsonify({"sections":sections})
 	
+def get_user(user):
+	return parse_user(user)
